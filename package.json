@@ -1,0 +1,22 @@
+{
+  "name": "make-a-readme",
+  "version": "0.1.0",
+  "description": "Make a README development environment",
+  "main": "N/A",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dguo/make-a-readme.git"
+  },
+  "author": "Danny Guo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dguo/make-a-readme/issues"
+  },
+  "homepage": "https://github.com/dguo/make-a-readme#readme",
+  "devDependencies": {
+    "webpack": "3.5.5"
+  }
+}

@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+# ./dev --help
+
+from __future__ import print_function
+
+import argparse
+from subprocess import call
+import sys
+
+parser = argparse.ArgumentParser(prog='./dev')
+subparsers = parser.add_subparsers(help='Available commands')
+
+def start(args):
+    call(['docker-compose', 'up', '--build', '--remove-orphans', '-d'])
+    try:
+        call(['docker-compose', 'logs', '-f'])
+    except KeyboardInterrupt:
+        pass
+parser_start = subparsers.add_parser('start',
+    help='Start the development enviroment')
+parser_start.set_defaults(func=start)
+
+def stop(args):
+    call(['docker-compose', 'stop'])
+parser_stop = subparsers.add_parser('stop',
+    help='Stop the development environment')
+parser_stop.set_defaults(func=stop)
+
+def clean(args):
+    call(['docker-compose', 'down', '--remove-orphans', '--rmi', 'local'])
+parser_clean = subparsers.add_parser('clean',
+    help='Clean up the development environment')
+parser_clean.set_defaults(func=clean)
+
+def sh(args):
+    call(['docker-compose', 'run', 'web', 'sh'])
+parser_sh = subparsers.add_parser('sh', help='Bring up a shell')
+parser_sh.set_defaults(func=sh)
+
+def ci(args):
+    try:
+        lint_command = ['docker-compose', '-f', 'docker-compose.prod.yml',
+                        'run', 'web', 'npm', 'run', 'lint:ci']
+        test_command = ['docker-compose', '-f', 'docker-compose.prod.yml',
+                        'run', 'web', 'npm', 'test']
+        if not args.test:
+            return_code = call(lint_command)
+            if return_code != 0:
+                print('Linting failed.')
+                sys.exit(1)
+        if not args.lint:
+            return_code = call(test_command)
+            if return_code != 0:
+                print('Tests failed.')
+                sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit()
+parser_ci = subparsers.add_parser('ci',
+                                  help='Run linting and/or tests')
+parser_ci_group = parser_ci.add_mutually_exclusive_group()
+parser_ci_group.add_argument('-l', '--lint', action='store_true',
+                             help='Only lint')
+parser_ci_group.add_argument('-t', '--test', action='store_true',
+                             help='Only run the tests')
+parser_ci.set_defaults(func=ci)
+
+args = parser.parse_args()
+args.func(args)
